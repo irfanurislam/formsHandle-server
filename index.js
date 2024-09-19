@@ -6,56 +6,60 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors());
-
-app.use(bodyParser.json());
 app.use(express.json());
-
+app.use(bodyParser.json());
 let formsData = [];
 // https://mqv67bn4.forms.app/formsdata
 // app.post("/webhook", async (req, res) => {
 //   try {
-//     console.log("Received data:", req.body); // Log the entire payload
-//     const { formName, formActive } = req.body;
+//     console.log("Received Webhooks Data:", req.body.answer.answers);
 
-//     // Check if fields exist in the incoming payload
-//     if (!formName || !formActive) {
-//       console.error("Missing required fields: formName or formActive");
-//       return res.status(400).json({ error: "Missing required fields" });
+//     const { answers } = req.body.answer || {}; // Extract answers array from the payload
+
+//     if (!answers) {
+//       console.error("No answers found in the payload");
+//       return res.status(400).json({ error: "No answers provided" });
 //     }
-//     // Log stored data
+
+//     // Extract formName and formActive from the answers
+//     const formName = answers[0]?.t || "Unnamed Form"; // Text field for form name
+//     const formActive = answers[1]?.c?.[0] === "Active"; // Checkbox or toggle for form active
+
+//     // Create a new form object for local storage
 //     const newForm = { formName, formActive, createdAt: new Date() };
 //     formsData.push(newForm);
-//     console.log("Stored data:", formsData);
-//     // send data
-//     // const formData = {
-//     //   name: formName,
-//     //   active: formActive,
-//     // };
-//     // await axios.post("https://api.123formbuilder.com/v2/forms", formData, {
-//     //   headers: {
-//     //     "Authorization": "my apikey",
-//     //     "Content-Type": "application/json",
-//     //   },
-//     // });
-//     // Mock API response instead of sending data to 123FormBuilder
+//     console.log("Stored Form Data:", formsData);
 
-//     // Mock API response instead of sending data to 123FormBuilder
-//     const mockApiResponse = {
-//       success: true,
-//       message: "Mock: Form successfully created in 123FormBuilder",
+//     // Send data to 123FormBuilder
+//     const formData = {
+//       name: formName,
+//       active: formActive,
 //     };
 
-//     console.log(mockApiResponse);
-//     res.status(200).json({ message: "Form received and processed" });
+//     const apiKey = "YOUR_123FORMBUILDER_API_KEY"; // Replace with your 123FormBuilder API key
+
+//     const response = await axios.post("https://api.123formbuilder.com/v2/forms", formData, {
+//       headers: {
+//         Authorization: `Bearer ${apiKey}`, // Bearer token authorization
+//         "Content-Type": "application/json",
+//       },
+//     });
+
+//     console.log("Form created on 123FormBuilder:", response.data);
+
+//     res.status(200).json({ message: "Form received and sent to 123FormBuilder", formData });
 //   } catch (error) {
 //     console.error("Error processing webhook:", error);
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // });
 
+
+/* if want to locally run then ngrok url give this  a insted locahost:5000 
+then webhook add this url because localhost 500o thisnot add so this code   */
 app.post("/webhook", async (req, res) => {
   try {
-    console.log("Received Webhooks Data:", req.body.answer.answers[0].t);
+    console.log("Received Webhooks Data:", req.body.answer.answers[1].c);
     // console.log("mydatawww", req.body.answer.answers[0].t);
 
     const { answers } = req.body.answer || {}; // Extract answers array from the payload
@@ -67,7 +71,7 @@ app.post("/webhook", async (req, res) => {
 
     // Extract and map fields for clarity (assuming the first answer is form name and the second is form active)
     const formName = answers[0]?.t || "Unnamed Form";
-    const formActive = answers[1]?.c?.[0] === "Active"; // Assuming 'c' contains an array and the first item is "Active"
+    const formActive = answers[1]?.c?.[0] === "active"; // Assuming 'c' contains an array and the first item is "Active"
 
     // Create a new form object
     const newForm = { formName, formActive, createdAt: new Date() };
